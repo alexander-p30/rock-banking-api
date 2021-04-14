@@ -30,6 +30,18 @@ defmodule RockBanking.Accounts do
   """
   def withdraw(account, value), do: Withdraw.withdraw(account, value)
 
+  @doc """
+  Fetch a specific record from database given a valid id.
+  """
+  def fetch(account_id) when is_binary(account_id) do
+    case Repo.get(Account, account_id) do
+      nil -> {:error, :not_found}
+      account = %Account{} -> {:ok, account}
+    end
+  end
+
+  def fetch(_account_id), do: {:error, :invalid_id}
+
   defp apply_creation_bonus(account = %Ecto.Changeset{}) do
     previous_balance = account.changes[:balance] || 0
     cast(account, %{balance: previous_balance + @default_bonus_balance}, [:balance])

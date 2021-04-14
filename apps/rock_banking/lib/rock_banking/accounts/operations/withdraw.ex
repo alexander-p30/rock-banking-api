@@ -4,7 +4,10 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
   """
 
   alias RockBanking.Accounts.Schemas.Account
+  alias RockBanking.ErrorSanitize
   alias RockBanking.Repo
+
+  @error_messages %{balance: [greater_than_or_equal_to: :insufficient_balance]}
 
   def withdraw(account = %Account{}, value) when is_integer(value) and value >= 0 do
     case do_withdraw(account, value) do
@@ -12,7 +15,8 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
         {:ok, account}
 
       {:error, invalid_changeset = %Ecto.Changeset{}} ->
-        {:error, %{reason: invalid_changeset.errors, account: account}}
+        {:error, ErrorSanitize.to_status_list(invalid_changeset.errors, @error_messages),
+         %{account: account}}
     end
   end
 

@@ -103,9 +103,8 @@ defmodule RockBanking.AccountsTest do
     } do
       transfer_value = -500_00
 
-      assert {:error,
+      assert {:error, [:invalid_accounts_or_value],
               %{
-                reason: "invalid accounts or value",
                 origin_account: origin_account,
                 destination_account: destination_account
               }} = Accounts.transfer(origin_account, destination_account, transfer_value)
@@ -121,15 +120,8 @@ defmodule RockBanking.AccountsTest do
     } do
       transfer_value = 5000_00
 
-      insufficient_balance_error = [
-        balance:
-          {"must be greater than or equal to %{number}",
-           [validation: :number, kind: :greater_than_or_equal_to, number: 0]}
-      ]
-
-      assert {:error,
+      assert {:error, [:insufficient_balance],
               %{
-                reason: ^insufficient_balance_error,
                 origin_account: origin_account,
                 destination_account: destination_account
               }} = Accounts.transfer(origin_account, destination_account, transfer_value)
@@ -172,16 +164,30 @@ defmodule RockBanking.AccountsTest do
     } do
       withdraw_value = 5000_00
 
-      insufficient_balance_error = [
-        balance:
-          {"must be greater than or equal to %{number}",
-           [validation: :number, kind: :greater_than_or_equal_to, number: 0]}
-      ]
-
-      assert {:error, %{account: account = %Account{}, reason: ^insufficient_balance_error}} =
+      assert {:error, [:insufficient_balance], %{account: account = %Account{}}} =
                Accounts.withdraw(account, withdraw_value)
 
       assert account.balance == original_balance
+    end
+  end
+
+  describe "fetch" do
+    setup do
+      {:ok, account = %Account{}} = Accounts.create(@valid_attrs)
+
+      %{account: account}
+    end
+
+    test "fetch author when author with given id exists", %{account: account} do
+      assert {:ok, account} == Accounts.fetch(account.id)
+    end
+
+    test "fail when author with given id doest not exist" do
+      assert {:error, :not_found} == Accounts.fetch(Ecto.UUID.generate())
+    end
+
+    test "fail when given id is invalid" do
+      assert {:error, :invalid_id} == Accounts.fetch(123)
     end
   end
 end
