@@ -42,14 +42,14 @@ defmodule RockBanking.AccountsTest do
     test "fail when name lenght is lower than 3" do
       attrs = %{@valid_attrs | name: "Ab"}
 
-      assert {:error, changeset = %Ecto.Changeset{}} = Accounts.create(attrs)
+      assert {:error, changeset = %Ecto.Changeset{valid?: false}} = Accounts.create(attrs)
       assert %{name: ["should be at least 3 character(s)"]} == errors_on(changeset)
     end
 
     test "fail when email does not match email regex" do
-      attrs = %{@valid_attrs | email: "not_validmail.com"}
+      attrs = %{@valid_attrs | email: "a"}
 
-      assert {:error, changeset = %Ecto.Changeset{}} = Accounts.create(attrs)
+      assert {:error, changeset = %Ecto.Changeset{valid?: false}} = Accounts.create(attrs)
       assert %{email: ["has invalid format"]} == errors_on(changeset)
     end
 
@@ -62,7 +62,7 @@ defmodule RockBanking.AccountsTest do
       assert account.balance == @default_bonus_balance
       assert [account] == Repo.all(Account)
 
-      assert {:error, changeset = %Ecto.Changeset{}} = Accounts.create(attrs)
+      assert {:error, changeset = %Ecto.Changeset{valid?: false}} = Accounts.create(attrs)
       assert %{email: ["has already been taken"]} == errors_on(changeset)
     end
   end
@@ -120,7 +120,7 @@ defmodule RockBanking.AccountsTest do
     } do
       transfer_value = 5000_00
 
-      assert {:error, [:insufficient_balance],
+      assert {:error, %{balance: ["must be greater than or equal to 0"]},
               %{
                 origin_account: origin_account,
                 destination_account: destination_account
@@ -131,7 +131,7 @@ defmodule RockBanking.AccountsTest do
     end
   end
 
-  describe "witdraw" do
+  describe "withdraw" do
     setup do
       attrs = %{name: "First Account Name", email: "facc@email.com"}
       {:ok, account = %Account{}} = Accounts.create(attrs)
@@ -152,7 +152,7 @@ defmodule RockBanking.AccountsTest do
     test "fail when value is invalid", %{account: account, original_balance: original_balance} do
       withdraw_value = -500_00
 
-      assert {:error, %{reason: "Invalid account or value", account: account}} =
+      assert {:error, :invalid_account_or_value, %{account: account}} =
                Accounts.withdraw(account, withdraw_value)
 
       assert account.balance == original_balance
@@ -164,8 +164,8 @@ defmodule RockBanking.AccountsTest do
     } do
       withdraw_value = 5000_00
 
-      assert {:error, [:insufficient_balance], %{account: account = %Account{}}} =
-               Accounts.withdraw(account, withdraw_value)
+      assert {:error, %{balance: ["must be greater than or equal to 0"]},
+              %{account: account = %Account{}}} = Accounts.withdraw(account, withdraw_value)
 
       assert account.balance == original_balance
     end

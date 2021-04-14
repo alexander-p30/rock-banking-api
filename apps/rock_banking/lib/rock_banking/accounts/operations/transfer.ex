@@ -8,8 +8,6 @@ defmodule RockBanking.Accounts.Operations.Transfer do
   alias RockBanking.ErrorSanitize
   alias Ecto.Multi
 
-  @error_messages %{balance: [greater_than_or_equal_to: :insufficient_balance]}
-
   def transfer(origin, destination, value) do
     case safe_transfer(origin, destination, value) do
       {:ok, updated_accounts} ->
@@ -19,7 +17,7 @@ defmodule RockBanking.Accounts.Operations.Transfer do
         {:error, reason, accounts}
 
       {:error, _failed_operation, invalid_changeset, _changes} ->
-        {:error, ErrorSanitize.to_status_list(invalid_changeset.errors, @error_messages),
+        {:error, ErrorSanitize.to_message_map(invalid_changeset),
          %{
            origin_account: origin,
            destination_account: destination
