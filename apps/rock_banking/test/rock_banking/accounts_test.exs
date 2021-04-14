@@ -75,14 +75,18 @@ defmodule RockBanking.AccountsTest do
       {:ok, origin_account = %Account{}} = Accounts.create(origin_attrs)
       {:ok, destination_account = %Account{}} = Accounts.create(destination_attrs)
 
-      %{origin_account: origin_account, destination_account: destination_account}
+      %{
+        origin_account: origin_account,
+        destination_account: destination_account,
+        original_balance: @default_bonus_balance
+      }
     end
 
     test "transfers value from two accounts when parameters are valid", %{
       origin_account: origin_account,
-      destination_account: destination_account
+      destination_account: destination_account,
+      original_balance: original_balance
     } do
-      original_balance = @default_bonus_balance
       transfer_value = 300_00
 
       assert {:ok, %{origin: origin_account, destination: destination_account}} =
@@ -94,9 +98,9 @@ defmodule RockBanking.AccountsTest do
 
     test "fail when value is not positive or 0", %{
       origin_account: origin_account,
-      destination_account: destination_account
+      destination_account: destination_account,
+      original_balance: original_balance
     } do
-      original_balance = @default_bonus_balance
       transfer_value = -500_00
 
       assert {:error,
@@ -112,9 +116,9 @@ defmodule RockBanking.AccountsTest do
 
     test "fail when origin balance is not sufficient", %{
       origin_account: origin_account,
-      destination_account: destination_account
+      destination_account: destination_account,
+      original_balance: original_balance
     } do
-      original_balance = @default_bonus_balance
       transfer_value = 5000_00
 
       insufficient_balance_error = [
@@ -132,6 +136,52 @@ defmodule RockBanking.AccountsTest do
 
       assert origin_account.balance == original_balance
       assert destination_account.balance == original_balance
+    end
+  end
+
+  describe "witdraw" do
+    setup do
+      attrs = %{name: "First Account Name", email: "facc@email.com"}
+      {:ok, account = %Account{}} = Accounts.create(attrs)
+
+      %{account: account, original_balance: @default_bonus_balance}
+    end
+
+    test "subtract balance from account when parameters are valid", %{
+      account: account,
+      original_balance: original_balance
+    } do
+      withdraw_value = 500_00
+
+      assert {:ok, account = %Account{}} = Accounts.withdraw(account, withdraw_value)
+      assert account.balance == original_balance - withdraw_value
+    end
+
+    test "fail when value is invalid", %{account: account, original_balance: original_balance} do
+      withdraw_value = -500_00
+
+      assert {:error, %{reason: "Invalid account or value", account: account}} =
+               Accounts.withdraw(account, withdraw_value)
+
+      assert account.balance == original_balance
+    end
+
+    test "fail when balance is insufficient", %{
+      account: account,
+      original_balance: original_balance
+    } do
+      withdraw_value = 5000_00
+
+      insufficient_balance_error = [
+        balance:
+          {"must be greater than or equal to %{number}",
+           [validation: :number, kind: :greater_than_or_equal_to, number: 0]}
+      ]
+
+      assert {:error, %{account: account = %Account{}, reason: ^insufficient_balance_error}} =
+               Accounts.withdraw(account, withdraw_value)
+
+      assert account.balance == original_balance
     end
   end
 end
