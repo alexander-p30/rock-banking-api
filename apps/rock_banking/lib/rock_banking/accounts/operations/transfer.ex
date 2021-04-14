@@ -1,6 +1,6 @@
 defmodule RockBanking.Accounts.Operations.Transfer do
   @moduledoc """
-  Operations available for accounts.
+  Transfer operation between accounts.
   """
 
   alias RockBanking.Accounts.Schemas.Account
@@ -15,9 +15,13 @@ defmodule RockBanking.Accounts.Operations.Transfer do
       {:error, accounts} ->
         {:error, accounts}
 
-      {:error, _failed_operation, accounts, _changes} ->
+      {:error, _failed_operation, invalid_changeset, _changes} ->
         {:error,
-         %{reason: accounts.errors, origin_account: origin, destination_account: destination}}
+         %{
+           reason: invalid_changeset.errors,
+           origin_account: origin,
+           destination_account: destination
+         }}
     end
   end
 

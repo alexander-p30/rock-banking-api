@@ -3,7 +3,7 @@ defmodule RockBanking.Accounts do
   Domain logic for accounts.
   """
 
-  alias RockBanking.Accounts.Operations.Transfer
+  alias RockBanking.Accounts.Operations.{Transfer, Withdraw}
   alias RockBanking.Accounts.Schemas.Account
   alias RockBanking.Repo
 
@@ -19,6 +19,8 @@ defmodule RockBanking.Accounts do
   end
 
   def transfer(origin, destination, value), do: Transfer.transfer(origin, destination, value)
+
+  def withdraw(account, value), do: Withdraw.withdraw(account, value)
 
   defp apply_creation_bonus(account = %Ecto.Changeset{}) do
     previous_balance = account.changes[:balance] || 0
