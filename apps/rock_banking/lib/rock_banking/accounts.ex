@@ -21,17 +21,23 @@ defmodule RockBanking.Accounts do
   @doc """
   Transfer money between origin and destination accounts given that supplied value is valid
   and origin account has sufficient balance.
+
+  Returns either {:ok, accounts_map} or {:error, error_status_list, accounts_map}.
   """
   def transfer(origin, destination, value), do: Transfer.transfer(origin, destination, value)
 
   @doc """
   Withdraw money from account given that the supplied value is valid and account has
   sufficient balance.
+
+  Returns either {:ok, account_map} or {:error, error_status_list, account_map}.
   """
   def withdraw(account, value), do: Withdraw.withdraw(account, value)
 
   @doc """
   Fetch a specific record from database given a valid id.
+
+  Returns {:ok, record}, {:error, :not_found} or {:error, :invalid_id}.
   """
   def fetch(account_id) when is_binary(account_id) do
     case Repo.get(Account, account_id) do
