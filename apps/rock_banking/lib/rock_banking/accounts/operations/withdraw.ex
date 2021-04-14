@@ -4,6 +4,7 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
   """
 
   alias RockBanking.Accounts.Schemas.Account
+  alias RockBanking.Accounts.Operations.Notification
   alias RockBanking.ErrorSanitize
   alias RockBanking.Repo
 
@@ -12,7 +13,7 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
   def withdraw(account = %Account{}, value) when is_integer(value) and value >= 0 do
     case do_withdraw(account, value) do
       {:ok, account = %Account{}} ->
-        {:ok, account}
+        {:ok, account |> Notification.send_email(:withdraw)}
 
       {:error, invalid_changeset = %Ecto.Changeset{}} ->
         {:error, ErrorSanitize.to_status_list(invalid_changeset.errors, @error_messages),
