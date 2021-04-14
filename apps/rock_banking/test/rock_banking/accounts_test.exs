@@ -28,6 +28,17 @@ defmodule RockBanking.AccountsTest do
       assert account.balance == @default_bonus_balance
     end
 
+    test "add default bonus balance on account creation with a given balance" do
+      preset_balance = 500_00
+      attrs = Map.put(@valid_attrs, :balance, preset_balance)
+
+      assert {:ok, %Account{} = account} = Accounts.create(attrs)
+      assert account.name == attrs.name
+      assert account.email == attrs.email
+      assert [account] == Repo.all(Account)
+      assert account.balance == @default_bonus_balance + preset_balance
+    end
+
     test "fail when name lenght is lower than 3" do
       attrs = %{@valid_attrs | name: "Ab"}
 

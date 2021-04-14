@@ -28,6 +28,7 @@ defmodule RockBanking.Accounts.Schemas.Account do
     |> validate_required(@required_fields)
     |> validate_length(:name, min: 3)
     |> validate_email_format(:email)
+    |> validate_number(:balance, greater_than_or_equal_to: 0)
     |> unique_constraint(:email, name: :index_unique_email_on_accounts)
   end
 end

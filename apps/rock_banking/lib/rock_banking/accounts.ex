@@ -10,7 +10,7 @@ defmodule RockBanking.Accounts do
 
   @default_bonus_balance 1000_00
 
-  def create(attrs) do
+  def create(attrs = %{}) do
     %Account{}
     |> Account.changeset(attrs)
     |> apply_creation_bonus()
@@ -18,6 +18,7 @@ defmodule RockBanking.Accounts do
   end
 
   defp apply_creation_bonus(account = %Ecto.Changeset{}) do
-    cast(account, %{balance: @default_bonus_balance}, [:balance])
+    previous_balance = account.changes[:balance] || 0
+    cast(account, %{balance: previous_balance + @default_bonus_balance}, [:balance])
   end
 end
