@@ -19,7 +19,7 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
   def withdraw(account, _value),
     do: {:error, %{reason: "Invalid account or value", account: account}}
 
-  def do_withdraw(account, value) do
+  defp do_withdraw(account, value) do
     account
     |> Account.changeset(%{balance: account.balance - value})
     |> Repo.update()

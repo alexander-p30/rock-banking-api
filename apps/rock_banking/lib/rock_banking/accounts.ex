@@ -18,8 +18,16 @@ defmodule RockBanking.Accounts do
     |> Repo.insert()
   end
 
+  @doc """
+  Transfer money between origin and destination accounts given that supplied value is valid
+  and origin account has sufficient balance.
+  """
   def transfer(origin, destination, value), do: Transfer.transfer(origin, destination, value)
 
+  @doc """
+  Withdraw money from account given that the supplied value is valid and account has
+  sufficient balance.
+  """
   def withdraw(account, value), do: Withdraw.withdraw(account, value)
 
   defp apply_creation_bonus(account = %Ecto.Changeset{}) do
