@@ -12,7 +12,14 @@ defmodule RockBanking.Accounts do
   @default_bonus_balance 1000_00
   @schema_attrs [:name, :email, :balance]
 
-  def create(attrs) do
+  @doc """
+  Create record on accounts table and sets initial balance to given balance +
+  #{@default_bonus_balance}.
+
+  Returns either {:ok, account} or {:error, changeset}.
+  """
+  @spec create(%{}) :: {:ok, %Account{}} | {:error, %Ecto.Changeset{}}
+  def create(attrs = %{}) do
     attrs = struct_to_map(@schema_attrs, attrs)
 
     %Account{}
@@ -27,6 +34,8 @@ defmodule RockBanking.Accounts do
 
   Returns either {:ok, accounts_map} or {:error, error_status_list, accounts_map}.
   """
+  @spec transfer(any, any, any) ::
+          {:ok, %{origin_account: %Account{}, destination_account: %Account{}}}
   def transfer(origin, destination, value), do: Transfer.transfer(origin, destination, value)
 
   @doc """
@@ -35,6 +44,8 @@ defmodule RockBanking.Accounts do
 
   Returns either {:ok, account_map} or {:error, error_status_list, account_map}.
   """
+  @spec withdraw(any, any) ::
+          {:ok, %Account{}} | {:error, %{atom() => String.t()}, %{account: %Account{}}}
   def withdraw(account, value), do: Withdraw.withdraw(account, value)
 
   @doc """
@@ -42,6 +53,7 @@ defmodule RockBanking.Accounts do
 
   Returns {:ok, record}, {:error, :not_found} or {:error, :invalid_id}.
   """
+  @spec fetch(any) :: {:ok, %Account{}} | {:error, :not_found | :invalid_id}
   def fetch(account_id) when is_binary(account_id) do
     case Repo.get(Account, account_id) do
       nil -> {:error, :not_found}
