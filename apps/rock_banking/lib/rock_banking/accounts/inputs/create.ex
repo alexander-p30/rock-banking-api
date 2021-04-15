@@ -1,4 +1,4 @@
-defmodule RockBanking.Accounts.Inputs do
+defmodule RockBanking.Accounts.Inputs.Create do
   @moduledoc """
   Input schema for account fields input validation.
   """
@@ -16,7 +16,10 @@ defmodule RockBanking.Accounts.Inputs do
     field :name, :string
     field :email, :string
     field :email_confirmation, :string
+    field :balance, :integer
   end
+
+  defdelegate fetch(struct, key), to: Map
 
   def changeset(model \\ %__MODULE__{}, params) do
     model
@@ -30,7 +33,7 @@ defmodule RockBanking.Accounts.Inputs do
   end
 
   defp validate_field_confirmation(changeset, field, confirmation_field) do
-    if changeset[field] == changeset[confirmation_field] do
+    if changeset.changes[field] == changeset.changes[confirmation_field] do
       changeset
     else
       add_error(changeset, :email_confirmation, "E-mail and e-mail confirmation must match")

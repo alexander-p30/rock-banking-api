@@ -10,8 +10,11 @@ defmodule RockBanking.Accounts do
   import Ecto.Changeset
 
   @default_bonus_balance 1000_00
+  @schema_attrs [:name, :email, :balance]
 
-  def create(attrs = %{}) do
+  def create(attrs) do
+    attrs = struct_to_map(@schema_attrs, attrs)
+
     %Account{}
     |> Account.changeset(attrs)
     |> apply_creation_bonus()
@@ -47,6 +50,20 @@ defmodule RockBanking.Accounts do
   end
 
   def fetch(_account_id), do: {:error, :invalid_id}
+
+  defp struct_to_map(attribute_list, struct) do
+    attribute_list
+    |> Enum.map(fn attribute ->
+      attribute_value =
+        case Map.fetch(struct, attribute) do
+          {:ok, value} -> value
+          :error -> nil
+        end
+
+      {attribute, attribute_value}
+    end)
+    |> Map.new()
+  end
 
   defp apply_creation_bonus(account = %Ecto.Changeset{}) do
     previous_balance = account.changes[:balance] || 0
