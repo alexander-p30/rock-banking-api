@@ -10,5 +10,6 @@ defmodule RockBankingWeb.Router do
 
     post "/accounts", AccountController, :create
     post "/accounts/transfer", AccountController, :transfer
+    post "/accounts/withdraw", AccountController, :withdraw
   end
 end

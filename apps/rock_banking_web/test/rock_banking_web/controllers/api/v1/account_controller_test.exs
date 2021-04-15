@@ -154,4 +154,43 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
                ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(400)
     end
   end
+
+  describe "post /accounts/withdraw" do
+    setup do
+      {:ok, account} = Accounts.create(%{name: "Some name", email: "valid@email.com"})
+
+      %{account_id: account.id, valid_value: 500_00, invalid_value: 5000_00}
+    end
+
+    test "success with 200 when account is valid and balance is enough", ctx do
+      params = %{account_id: ctx.account_id, value: ctx.valid_value}
+
+      assert nil ==
+               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(200)
+    end
+
+    test "fail with 400 when account is valid but balance is not enough", ctx do
+      params = %{account_id: ctx.account_id, value: ctx.invalid_value}
+
+      assert %{
+               "details" => %{"balance" => ["must be greater than or equal to 0"]},
+               "reason" => "bad input"
+             } ==
+               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(400)
+    end
+
+    test "fail with 400 when account does not exist", ctx do
+      params = %{account_id: Ecto.UUID.generate(), value: ctx.invalid_value}
+
+      assert %{"reason" => "account not found"} ==
+               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(404)
+    end
+
+    test "fail with 400 when provided id is invalid", ctx do
+      params = %{account_id: 1, value: ctx.invalid_value}
+
+      assert %{"reason" => "invalid id", "details" => %{"id" => "provided id is not valid"}} ==
+               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(400)
+    end
+  end
 end
