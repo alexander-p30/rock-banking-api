@@ -39,8 +39,16 @@ defmodule RockBanking.Accounts.Operations.Transfer do
     |> Repo.transaction()
   end
 
+  defp safe_transfer(origin = %Account{}, destination = %Account{}, _value) do
+    {:error, %{value: "must be an integer greater than or equal to 0"},
+     %{
+       origin_account: origin,
+       destination_account: destination
+     }}
+  end
+
   defp safe_transfer(origin, destination, _value) do
-    {:error, [:invalid_accounts_or_value],
+    {:error, %{accounts: "must be of %Account{} type"},
      %{
        origin_account: origin,
        destination_account: destination

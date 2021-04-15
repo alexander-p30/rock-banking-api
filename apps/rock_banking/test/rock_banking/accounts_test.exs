@@ -96,6 +96,23 @@ defmodule RockBanking.AccountsTest do
       assert destination_account.balance == original_balance + transfer_value
     end
 
+    test "fail when accounts are not of %Account{} type", %{
+      destination_account: destination_account,
+      original_balance: original_balance
+    } do
+      transfer_value = -500_00
+
+      origin_account = %{}
+
+      assert {:error, %{accounts: "must be of %Account{} type"},
+              %{
+                origin_account: ^origin_account,
+                destination_account: destination_account
+              }} = Accounts.transfer(origin_account, destination_account, transfer_value)
+
+      assert destination_account.balance == original_balance
+    end
+
     test "fail when value is not positive or 0", %{
       origin_account: origin_account,
       destination_account: destination_account,
@@ -103,7 +120,7 @@ defmodule RockBanking.AccountsTest do
     } do
       transfer_value = -500_00
 
-      assert {:error, [:invalid_accounts_or_value],
+      assert {:error, %{value: "must be an integer greater than or equal to 0"},
               %{
                 origin_account: origin_account,
                 destination_account: destination_account
