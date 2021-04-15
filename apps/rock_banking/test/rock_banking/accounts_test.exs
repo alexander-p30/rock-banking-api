@@ -169,8 +169,8 @@ defmodule RockBanking.AccountsTest do
     test "fail when value is invalid", %{account: account, original_balance: original_balance} do
       withdraw_value = -500_00
 
-      assert {:error, :invalid_account_or_value, %{account: account}} =
-               Accounts.withdraw(account, withdraw_value)
+      assert {:error, %{value: "must be an integer greater than or equal to 0"},
+              %{account: account}} = Accounts.withdraw(account, withdraw_value)
 
       assert account.balance == original_balance
     end

@@ -18,8 +18,11 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
     end
   end
 
+  def withdraw(account = %Account{}, _value),
+    do: {:error, %{value: "must be an integer greater than or equal to 0"}, %{account: account}}
+
   def withdraw(account, _value),
-    do: {:error, :invalid_account_or_value, %{account: account}}
+    do: {:error, %{account: "must be of type %Account{}"}, %{account: account}}
 
   defp do_withdraw(account, value) do
     account
