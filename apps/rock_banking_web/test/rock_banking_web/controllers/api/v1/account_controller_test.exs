@@ -1,6 +1,8 @@
 defmodule RockBankingWeb.Api.V1.AccountControllerTest do
   use RockBankingWeb.ConnCase, async: true
 
+  alias RockBanking.Accounts
+
   @valid_attrs %{
     name: "At Least Three",
     email: "valid@email.com",
@@ -87,6 +89,69 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
                }
              } ==
                conn |> post("api/v1/accounts", valid_attrs) |> json_response(412)
+    end
+  end
+
+  describe "post /accounts/transfer" do
+    setup do
+      {:ok, origin_account} = Accounts.create(%{name: "Some name", email: "valid@email.com"})
+
+      {:ok, destination_account} =
+        Accounts.create(%{name: "Some other name", email: "valid@email2.com"})
+
+      %{
+        origin_account_id: origin_account.id,
+        destination_account_id: destination_account.id,
+        valid_value: 500_00,
+        invalid_value: 5000_00
+      }
+    end
+
+    test "success with 200 when accounts are valid and balance is enough", ctx do
+      params = %{
+        origin_account_id: ctx.origin_account_id,
+        destination_account_id: ctx.destination_account_id,
+        value: ctx.valid_value
+      }
+
+      assert nil ==
+               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(200)
+    end
+
+    test "fail with 400 when accounts are valid but balance is not enough", ctx do
+      params = %{
+        origin_account_id: ctx.origin_account_id,
+        destination_account_id: ctx.destination_account_id,
+        value: ctx.invalid_value
+      }
+
+      assert %{
+               "details" => %{"balance" => ["must be greater than or equal to 0"]},
+               "reason" => "bad input"
+             } ==
+               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(400)
+    end
+
+    test "fail with 400 when account does not exist", ctx do
+      params = %{
+        origin_account_id: Ecto.UUID.generate(),
+        destination_account_id: ctx.destination_account_id,
+        value: ctx.invalid_value
+      }
+
+      assert %{"reason" => "account not found"} ==
+               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(404)
+    end
+
+    test "fail with 400 when provided id is invalid", ctx do
+      params = %{
+        origin_account_id: 1,
+        destination_account_id: ctx.destination_account_id,
+        value: ctx.invalid_value
+      }
+
+      assert %{"reason" => "invalid id", "details" => %{"id" => "provided id is not valid"}} ==
+               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(400)
     end
   end
 end

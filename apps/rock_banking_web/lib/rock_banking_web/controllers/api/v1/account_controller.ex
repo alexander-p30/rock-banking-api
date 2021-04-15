@@ -9,6 +9,10 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   alias RockBankingWeb.InputValidate
   alias RockBanking.ErrorSanitize
 
+  @doc """
+  Create an account with the given params. May respond with 200, when successful, or 4xx when
+  params are invalid.
+  """
   def create(conn, params) do
     with {:ok, input} <- validate_input(params),
          {:ok, account} <- Accounts.create(input) do
@@ -19,6 +23,33 @@ defmodule RockBankingWeb.Api.V1.AccountController do
         send_json(conn, 412, error_message)
 
       {:error, error_details} ->
+        error_message = %{reason: "bad input", details: error_details}
+        send_json(conn, 400, error_message)
+    end
+  end
+
+  @doc """
+  Attempts to transfer balance between accounts with given ids. May respond with 200, when
+  successful, or 4xx when params are invalid.
+  """
+  def transfer(conn, %{
+        "origin_account_id" => origin_account_id,
+        "destination_account_id" => destination_account_id,
+        "value" => value
+      }) do
+    with {:ok, origin_account} <- Accounts.fetch(origin_account_id),
+         {:ok, destination_account} <- Accounts.fetch(destination_account_id),
+         {:ok, _accounts = %{}} <- Accounts.transfer(origin_account, destination_account, value) do
+      send_json(conn, 200, nil)
+    else
+      {:error, :not_found} ->
+        send_json(conn, 404, %{reason: "account not found"})
+
+      {:error, :invalid_id} ->
+        error_message = %{reason: "invalid id", details: %{id: "provided id is not valid"}}
+        send_json(conn, 400, error_message)
+
+      {:error, error_details, _accounts} ->
         error_message = %{reason: "bad input", details: error_details}
         send_json(conn, 400, error_message)
     end

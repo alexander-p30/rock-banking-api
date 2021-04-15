@@ -8,6 +8,7 @@ defmodule RockBankingWeb.Router do
   scope "/api/v1", RockBankingWeb.Api.V1 do
     pipe_through :api
 
-    resources "/accounts", AccountController, only: [:create]
+    post "/accounts", AccountController, :create
+    post "/accounts/transfer", AccountController, :transfer
   end
 end
