@@ -19,8 +19,10 @@ defmodule RockBanking.Accounts.Inputs.Create do
     field :balance, :integer
   end
 
+  @spec fetch(map, any) :: :error | {:ok, any}
   defdelegate fetch(struct, key), to: Map
 
+  @spec changeset(any, any) :: %Ecto.Changeset{}
   def changeset(model \\ %__MODULE__{}, params) do
     model
     |> cast(params, @required_fields ++ @optional_fields)

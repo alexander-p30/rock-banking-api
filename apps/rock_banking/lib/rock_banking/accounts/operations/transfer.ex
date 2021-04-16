@@ -8,6 +8,7 @@ defmodule RockBanking.Accounts.Operations.Transfer do
   alias RockBanking.ErrorSanitize
   alias Ecto.Multi
 
+  @spec transfer(any, any, any) :: {:ok, any} | {:error, any, map}
   def transfer(origin, destination, value) do
     case safe_transfer(origin, destination, value) do
       {:ok, updated_accounts} ->

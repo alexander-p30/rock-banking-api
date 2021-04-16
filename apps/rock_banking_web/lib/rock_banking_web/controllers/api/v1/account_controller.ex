@@ -13,6 +13,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   Create an account with the given params. May respond with 200, when successful, or 4xx when
   params are invalid.
   """
+  @spec create(Plug.Conn.t(), any) :: Plug.Conn.t()
   def create(conn, params = %{"name" => _, "email" => _}) do
     with {:ok, input} <- validate_input(params),
          {:ok, account} <- Accounts.create(input) do
@@ -37,6 +38,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   Attempts to transfer balance between accounts with given ids. May respond with 200, when
   successful, or 4xx when params are invalid.
   """
+  @spec transfer(Plug.Conn.t(), any) :: Plug.Conn.t()
   def transfer(conn, %{
         "origin_account_id" => origin_account_id,
         "destination_account_id" => destination_account_id,
@@ -69,6 +71,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   Attempts to withdraw balance form account with given id. May respond with 200, when successful
   or 4xx when params are invalid.
   """
+  @spec withdraw(Plug.Conn.t(), any) :: Plug.Conn.t()
   def withdraw(conn, %{"account_id" => account_id, "value" => value}) do
     with {:ok, account} <- Accounts.fetch(account_id),
          {:ok, _account = %{}} <- Accounts.withdraw(account, value) do

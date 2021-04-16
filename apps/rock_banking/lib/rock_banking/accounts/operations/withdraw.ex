@@ -8,6 +8,14 @@ defmodule RockBanking.Accounts.Operations.Withdraw do
   alias RockBanking.ErrorSanitize
   alias RockBanking.Repo
 
+  @spec withdraw(any, any) ::
+          {:ok, %RockBanking.Accounts.Schemas.Account{}}
+          | {:error,
+             %{
+               optional(:account) => String.t() | [binary | map],
+               optional(:value) => String.t() | [binary | map],
+               optional(atom) => [binary | map]
+             }, %{account: any}}
   def withdraw(account = %Account{}, value) when is_integer(value) and value >= 0 do
     case do_withdraw(account, value) do
       {:ok, account = %Account{}} ->

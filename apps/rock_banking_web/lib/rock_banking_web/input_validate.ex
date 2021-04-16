@@ -8,6 +8,7 @@ defmodule RockBankingWeb.InputValidate do
   @doc """
   Validates a given changeset. May return {:ok, schema} or {:error, error_map}
   """
+  @spec validate(%Ecto.Changeset{}) :: {:ok, map} | {:error, %{optional(atom) => [binary | map]}}
   def validate(changeset = %Ecto.Changeset{valid?: true}),
     do: {:ok, Ecto.Changeset.apply_changes(changeset)}
 
