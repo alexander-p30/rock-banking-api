@@ -123,8 +123,8 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
         value: ctx.valid_value
       }
 
-      assert nil ==
-               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(200)
+      assert "" ==
+               ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(204)
     end
 
     test "fail with 400 when accounts are valid but balance is not enough", ctx do
@@ -189,8 +189,8 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
     test "success with 200 when account is valid and balance is enough", ctx do
       params = %{account_id: ctx.account_id, value: ctx.valid_value}
 
-      assert nil ==
-               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(200)
+      assert "" ==
+               ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(204)
     end
 
     test "fail with 400 when account is valid but balance is not enough", ctx do
