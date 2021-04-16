@@ -30,11 +30,11 @@ defmodule RockBanking.Accounts.Operations.Transfer do
     Multi.new()
     |> Multi.update(
       :origin,
-      origin |> Account.changeset(%{balance: origin.balance - value})
+      Account.changeset(origin, %{balance: origin.balance - value})
     )
     |> Multi.update(
       :destination,
-      destination |> Account.changeset(%{balance: origin.balance + value})
+      Account.changeset(destination, %{balance: origin.balance + value})
     )
     |> Repo.transaction()
   end
