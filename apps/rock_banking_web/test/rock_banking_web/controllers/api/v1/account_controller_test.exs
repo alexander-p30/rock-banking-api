@@ -90,6 +90,15 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
              } ==
                conn |> post("api/v1/accounts", valid_attrs) |> json_response(412)
     end
+
+    test "fail with 400 when params are missing", %{conn: conn} do
+      error_response = %{
+        "details" => %{"email" => "required but missing", "name" => "required but missing"},
+        "reason" => "bad input"
+      }
+
+      assert error_response == conn |> post("api/v1/accounts", %{}) |> json_response(400)
+    end
   end
 
   describe "post /accounts/transfer" do
@@ -153,6 +162,21 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
       assert %{"reason" => "invalid id", "details" => %{"id" => "provided id is not valid"}} ==
                ctx.conn |> post("api/v1/accounts/transfer", params) |> json_response(400)
     end
+
+    test "fail with 400 when params are missing", %{conn: conn} do
+      error_response = %{
+        "details" => %{
+          "origin_account_id" => "required but missing",
+          "value" => "required but missing"
+        },
+        "reason" => "bad input"
+      }
+
+      params = %{destination_account_id: Ecto.UUID.generate()}
+
+      assert error_response ==
+               conn |> post("api/v1/accounts/transfer", params) |> json_response(400)
+    end
   end
 
   describe "post /accounts/withdraw" do
@@ -191,6 +215,19 @@ defmodule RockBankingWeb.Api.V1.AccountControllerTest do
 
       assert %{"reason" => "invalid id", "details" => %{"id" => "provided id is not valid"}} ==
                ctx.conn |> post("api/v1/accounts/withdraw", params) |> json_response(400)
+    end
+
+    test "fail with 400 when params are missing", %{conn: conn} do
+      error_response = %{
+        "details" => %{
+          "account_id" => "required but missing",
+          "value" => "required but missing"
+        },
+        "reason" => "bad input"
+      }
+
+      assert error_response ==
+               conn |> post("api/v1/accounts/withdraw", %{}) |> json_response(400)
     end
   end
 end
