@@ -9,7 +9,7 @@ defmodule RockBanking.Accounts.Inputs.Create do
   import RockBanking.Changesets
 
   @required_fields [:name, :email, :email_confirmation]
-  @optional_fields [:balance]
+  @optional_fields []
 
   @primary_key false
   embedded_schema do
@@ -28,7 +28,6 @@ defmodule RockBanking.Accounts.Inputs.Create do
     |> validate_length(:name, min: 3)
     |> validate_email_format(:email)
     |> validate_email_format(:email_confirmation)
-    |> validate_number(:balance, greater_than_or_equal_to: 0)
     |> validate_field_confirmation(:email, :email_confirmation)
   end
 
