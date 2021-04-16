@@ -45,7 +45,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
     with {:ok, origin_account} <- Accounts.fetch(origin_account_id),
          {:ok, destination_account} <- Accounts.fetch(destination_account_id),
          {:ok, _accounts = %{}} <- Accounts.transfer(origin_account, destination_account, value) do
-      send_json(conn, 200, nil)
+      send_json(conn, 204, "")
     else
       {:error, :not_found} ->
         send_json(conn, 404, %{reason: "account not found"})
@@ -72,7 +72,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   def withdraw(conn, %{"account_id" => account_id, "value" => value}) do
     with {:ok, account} <- Accounts.fetch(account_id),
          {:ok, _account = %{}} <- Accounts.withdraw(account, value) do
-      send_json(conn, 200, nil)
+      send_json(conn, 204, "")
     else
       {:error, :not_found} ->
         send_json(conn, 404, %{reason: "account not found"})
