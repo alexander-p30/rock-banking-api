@@ -13,7 +13,7 @@ defmodule RockBankingWeb.Api.V1.AccountController do
   Create an account with the given params. May respond with 200, when successful, or 4xx when
   params are invalid.
   """
-  def create(conn, params) do
+  def create(conn, params = %{"name" => _, "email" => _}) do
     with {:ok, input} <- validate_input(params),
          {:ok, account} <- Accounts.create(input) do
       send_json(conn, 200, account)
@@ -26,6 +26,11 @@ defmodule RockBankingWeb.Api.V1.AccountController do
         error_message = %{reason: "bad input", details: error_details}
         send_json(conn, 400, error_message)
     end
+  end
+
+  def create(conn, params) do
+    expected_params = ~w(name email)
+    send_missing_params_response(conn, params, expected_params)
   end
 
   @doc """
@@ -55,6 +60,11 @@ defmodule RockBankingWeb.Api.V1.AccountController do
     end
   end
 
+  def transfer(conn, params) do
+    expected_params = ~w(origin_account_id destination_account_id value)
+    send_missing_params_response(conn, params, expected_params)
+  end
+
   @doc """
   Attempts to withdraw balance form account with given id. May respond with 200, when successful
   or 4xx when params are invalid.
@@ -77,6 +87,11 @@ defmodule RockBankingWeb.Api.V1.AccountController do
     end
   end
 
+  def withdraw(conn, params) do
+    expected_params = ~w(account_id value)
+    send_missing_params_response(conn, params, expected_params)
+  end
+
   defp validate_input(params) do
     params
     |> Inputs.Create.changeset()
@@ -87,5 +102,20 @@ defmodule RockBankingWeb.Api.V1.AccountController do
     conn
     |> put_resp_header("content-type", "application/json")
     |> send_resp(status, Jason.encode!(body))
+  end
+
+  defp send_missing_params_response(conn, params, expected_params) do
+    error_message = %{reason: "bad input", details: list_missing_params(params, expected_params)}
+    send_json(conn, 400, error_message)
+  end
+
+  defp list_missing_params(params, expected_params) do
+    expected_params
+    |> Enum.reduce([], fn current_param, missing_params ->
+      if params[current_param],
+        do: missing_params,
+        else: [{current_param, "required but missing"} | missing_params]
+    end)
+    |> Map.new()
   end
 end
